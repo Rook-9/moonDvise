@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<svg baseProfile="full" height="1024" version="1.1" viewBox="0 0 1024 1024" width="1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neonGrad" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#00eaff" />
+      <stop offset="1" stop-color="#ff3af2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Убрали черный фон -->
+  <circle cx="512" cy="512" r="300" stroke="url(#neonGrad)" stroke-width="40" fill="none" />
+
+  <!-- Иероглиф / MoonDvise -->
+  <text x="50%" y="55%" text-anchor="middle" fill="url(#neonGrad)" font-family="sans-serif" font-size="140" font-weight="bold">
+    月
+  </text>
+  <text x="50%" y="90%" text-anchor="middle" fill="url(#neonGrad)" font-family="sans-serif" font-size="70">
+    moonDvise
+  </text>
+</svg>
