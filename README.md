@@ -75,14 +75,12 @@ Create a `.env` file in the project root and add:
 ```bash
 VITE_ASTROLOGER_API=your_astrologer_api_key_here
 VITE_OPENCAGE_API=your_opencage_api_key_here
-VITE_OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### Required API Keys:
 
 1. **VITE_ASTROLOGER_API**: Your RapidAPI key for the Astrologer API (https://rapidapi.com/astrologer-api-astrologer-api-default/api/astrologer/)
 2. **VITE_OPENCAGE_API**: Your OpenCage API key (optional fallback for geocoding)
-3. **VITE_OPENAI_API_KEY**: Your OpenAI API key for cosmic analysis (https://platform.openai.com/api-keys)
 
 ### Services Used:
 
@@ -90,4 +88,3 @@ VITE_OPENAI_API_KEY=your_openai_api_key_here
 - **geo-tz**: Timezone resolution from coordinates
 - **Astrologer API**: Synastry aspects calculation
 - **OpenCage**: Fallback geocoding service (if Nominatim fails)
-- **OpenAI GPT-4o-mini**: Cosmic career analysis and interpretation

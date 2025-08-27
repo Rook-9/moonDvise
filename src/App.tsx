@@ -9,8 +9,6 @@ import { Button } from './components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { LocalizationProvider, useLocalization } from './components/LocalizationContext';
 import { getSynastryAspects } from './lib/astrologyApi';
-import { analyzeCosmicCareer } from './lib/openaiService';
-import type { CosmicAnalysisResponse } from './lib/openaiService';
 
 interface LocationData {
   date: string;
@@ -25,7 +23,6 @@ function AppContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [userDataSubmitted, setUserDataSubmitted] = useState(false);
   const [interviewDataSubmitted, setInterviewDataSubmitted] = useState(false);
-  const [cosmicAnalysis, setCosmicAnalysis] = useState<CosmicAnalysisResponse | null>(null);
 
   const handleUserDataSubmit = (data: LocationData) => {
     setUserData(data);
@@ -52,12 +49,6 @@ function AppContent() {
 
       console.debug('Synastry aspects result:', synastryResult);
 
-      // Analyze the aspects with OpenAI
-      const analysis = await analyzeCosmicCareer(userData, interviewData, synastryResult);
-
-      console.debug('Cosmic analysis result:', analysis);
-
-      setCosmicAnalysis(analysis);
       setShowResult(true);
     } catch (err) {
       console.error(err);
@@ -153,12 +144,8 @@ function AppContent() {
           </div>
 
           {/* Result Section */}
-          {showResult && userData && interviewData && cosmicAnalysis && (
-            <ResultBlock 
-              userData={userData} 
-              interviewData={interviewData} 
-              cosmicAnalysis={cosmicAnalysis}
-            />
+          {showResult && userData && interviewData && (
+            <ResultBlock userData={userData} interviewData={interviewData} />
           )}
         </main>
 
