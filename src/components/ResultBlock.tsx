@@ -3,6 +3,7 @@ import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { Star, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useLocalization } from './LocalizationContext';
+import type { CosmicAnalysisResponse } from '../lib/openaiService';
 
 interface LocationData {
   date: string;
@@ -12,27 +13,37 @@ interface LocationData {
 interface ResultBlockProps {
   userData: LocationData;
   interviewData: LocationData;
+  cosmicAnalysis?: CosmicAnalysisResponse | null;
 }
 
-export function ResultBlock({ userData, interviewData }: ResultBlockProps) {
+export function ResultBlock({ userData, interviewData, cosmicAnalysis }: ResultBlockProps) {
   const { t } = useLocalization();
   
-  // Mock cosmic analysis - in real app this would call an API
-  const cosmicAlignment = Math.floor(Math.random() * 100);
+  // Check if cosmicAnalysis is available
+  if (!cosmicAnalysis) {
+    return (
+      <Card className="bg-background/60 backdrop-blur-sm border-gradient-to-r from-purple-500/30 to-cyan-500/30 mx-auto max-w-4xl">
+        <CardHeader className="text-center">
+          <CardTitle className="flex items-center justify-center text-2xl">
+            <Star className="w-6 h-6 mr-2 text-yellow-400" />
+            <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              {t.cosmicCareerAnalysis}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Analyzing cosmic alignment...</p>
+        </CardContent>
+      </Card>
+    );
+  }
   
-  const favorableFactors = [
-    t.mercuryEnhances,
-    t.jupiterSupports,
-    t.moonPhaseConfidence,
-    t.venusCharisma,
-    t.sunAlignment
-  ];
-  
-  const challenges = [
-    t.marsNervousness,
-    t.saturnPreparation,
-    t.eclipseFlexibility
-  ];
+  // Use the real cosmic analysis data
+  const cosmicAlignment = cosmicAnalysis.cosmicAlignmentScore;
+  const favorableFactors = cosmicAnalysis.favorableFactors;
+  const challenges = cosmicAnalysis.cosmicChallenges;
+  const interviewTips = cosmicAnalysis.cosmicInterviewGuidance;
 
   const getRecommendation = () => {
     if (cosmicAlignment >= 80) {
@@ -60,14 +71,6 @@ export function ResultBlock({ userData, interviewData }: ResultBlockProps) {
   };
 
   const recommendation = getRecommendation();
-
-  // Generate interview-specific advice
-  const interviewTips = [
-    t.wearColors,
-    t.practiceAnswers,
-    t.arriveEarly,
-    t.bringTalisman
-  ];
 
   return (
     <Card className="bg-background/60 backdrop-blur-sm border-gradient-to-r from-purple-500/30 to-cyan-500/30 mx-auto max-w-4xl">

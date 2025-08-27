@@ -9,6 +9,8 @@ import { Button } from './components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { LocalizationProvider, useLocalization } from './components/LocalizationContext';
 import { getSynastryAspects } from './lib/astrologyApi';
+import { analyzeCosmicCareer, clearAnalysisCache } from './lib/openaiService';
+import type { CosmicAnalysisResponse } from './lib/openaiService';
 
 interface LocationData {
   date: string;
@@ -23,10 +25,15 @@ function AppContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [userDataSubmitted, setUserDataSubmitted] = useState(false);
   const [interviewDataSubmitted, setInterviewDataSubmitted] = useState(false);
+  const [cosmicAnalysis, setCosmicAnalysis] = useState<CosmicAnalysisResponse | null>(null);
 
   const handleUserDataSubmit = (data: LocationData) => {
     setUserData(data);
     setUserDataSubmitted(true);
+    // Clear cache and reset result when data changes
+    clearAnalysisCache();
+    setCosmicAnalysis(null);
+    setShowResult(false);
     // Reset after 3 seconds
     setTimeout(() => setUserDataSubmitted(false), 3000);
   };
@@ -34,6 +41,10 @@ function AppContent() {
   const handleInterviewDataSubmit = (data: LocationData) => {
     setInterviewData(data);
     setInterviewDataSubmitted(true);
+    // Clear cache and reset result when data changes
+    clearAnalysisCache();
+    setCosmicAnalysis(null);
+    setShowResult(false);
     // Reset after 3 seconds
     setTimeout(() => setInterviewDataSubmitted(false), 3000);
   };
@@ -49,6 +60,12 @@ function AppContent() {
 
       console.debug('Synastry aspects result:', synastryResult);
 
+      // Analyze the aspects with OpenAI
+      const analysis = await analyzeCosmicCareer(userData, interviewData, synastryResult);
+
+      console.debug('Cosmic analysis result:', analysis);
+
+      setCosmicAnalysis(analysis);
       setShowResult(true);
     } catch (err) {
       console.error(err);
@@ -145,7 +162,11 @@ function AppContent() {
 
           {/* Result Section */}
           {showResult && userData && interviewData && (
-            <ResultBlock userData={userData} interviewData={interviewData} />
+            <ResultBlock 
+              userData={userData} 
+              interviewData={interviewData} 
+              cosmicAnalysis={cosmicAnalysis}
+            />
           )}
         </main>
 
