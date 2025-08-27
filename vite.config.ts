@@ -7,9 +7,18 @@ import tailwindcss from "@tailwindcss/vite"
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-  alias: {
-    "@": path.resolve(__dirname, "./src"),
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
     },
   },
-  
+  server: {
+    proxy: {
+      '/api/astrology': {
+        target: 'https://json.freeastrologyapi.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/astrology/, ''),
+        secure: false,
+      },
+    },
+  },
 })

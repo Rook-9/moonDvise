@@ -13,9 +13,10 @@ interface LocationData {
 
 interface InterviewDataFormProps {
   onSubmit: (data: LocationData) => void;
+  isSubmitted?: boolean;
 }
 
-export function InterviewDataForm({ onSubmit }: InterviewDataFormProps) {
+export function InterviewDataForm({ onSubmit, isSubmitted = false }: InterviewDataFormProps) {
   const { t } = useLocalization();
   const [formData, setFormData] = useState<LocationData>({
     date: '',
@@ -80,6 +81,18 @@ export function InterviewDataForm({ onSubmit }: InterviewDataFormProps) {
             {t.setInterviewData}
           </Button>
         </form>
+        
+        {/* Success State */}
+        {isSubmitted && (
+          <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
+            <div className="flex items-center text-green-400">
+              <div className="w-4 h-4 bg-green-500 rounded-full mr-2 flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <span className="text-sm font-medium">Interview data set successfully!</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

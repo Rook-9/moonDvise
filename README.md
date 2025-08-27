@@ -67,3 +67,24 @@ export default tseslint.config([
   },
 ])
 ```
+
+## API Setup
+
+Create a `.env` file in the project root and add:
+
+```bash
+VITE_ASTROLOGER_API=your_astrologer_api_key_here
+VITE_OPENCAGE_API=your_opencage_api_key_here
+```
+
+### Required API Keys:
+
+1. **VITE_ASTROLOGER_API**: Your RapidAPI key for the Astrologer API (https://rapidapi.com/astrologer-api-astrologer-api-default/api/astrologer/)
+2. **VITE_OPENCAGE_API**: Your OpenCage API key (optional fallback for geocoding)
+
+### Services Used:
+
+- **Nominatim** (OpenStreetMap): Primary geocoding service (free, no API key required)
+- **geo-tz**: Timezone resolution from coordinates
+- **Astrologer API**: Synastry aspects calculation
+- **OpenCage**: Fallback geocoding service (if Nominatim fails)

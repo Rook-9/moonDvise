@@ -8,6 +8,7 @@ import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import { Button } from './components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { LocalizationProvider, useLocalization } from './components/LocalizationContext';
+import { getSynastryAspects } from './lib/astrologyApi';
 
 interface LocationData {
   date: string;
@@ -20,22 +21,40 @@ function AppContent() {
   const [interviewData, setInterviewData] = useState<LocationData | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [userDataSubmitted, setUserDataSubmitted] = useState(false);
+  const [interviewDataSubmitted, setInterviewDataSubmitted] = useState(false);
 
   const handleUserDataSubmit = (data: LocationData) => {
     setUserData(data);
+    setUserDataSubmitted(true);
+    // Reset after 3 seconds
+    setTimeout(() => setUserDataSubmitted(false), 3000);
   };
 
   const handleInterviewDataSubmit = (data: LocationData) => {
     setInterviewData(data);
+    setInterviewDataSubmitted(true);
+    // Reset after 3 seconds
+    setTimeout(() => setInterviewDataSubmitted(false), 3000);
   };
 
   const askStars = async () => {
-    if (userData && interviewData) {
+    if (!userData || !interviewData) return;
+
+    try {
       setIsAnalyzing(true);
-      // Simulate cosmic analysis time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setIsAnalyzing(false);
+
+      // Get synastry aspects between user and interview data
+      const synastryResult = await getSynastryAspects(userData, interviewData);
+
+      console.debug('Synastry aspects result:', synastryResult);
+
       setShowResult(true);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to analyze with astrology API. Check console and API keys.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -82,8 +101,14 @@ function AppContent() {
 
           {/* Forms Section */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <UserDataForm onSubmit={handleUserDataSubmit} />
-            <InterviewDataForm onSubmit={handleInterviewDataSubmit} />
+            <UserDataForm 
+              onSubmit={handleUserDataSubmit} 
+              isSubmitted={userDataSubmitted}
+            />
+            <InterviewDataForm 
+              onSubmit={handleInterviewDataSubmit} 
+              isSubmitted={interviewDataSubmitted}
+            />
           </div>
 
           {/* Ask Stars Button */}
