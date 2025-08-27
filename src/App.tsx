@@ -66,7 +66,7 @@ function AppContent() {
       <div className="relative z-10">
         <Header />
         
-        <main className="container mx-auto px-4 py-8">
+        <main className="w-full max-w-none px-4 py-8">
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">

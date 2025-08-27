@@ -11,7 +11,7 @@ export function Header() {
 
   return (
     <header className="border-b border-border/20 backdrop-blur-sm bg-background/10">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div className="w-full max-w-none px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-bold">月</span>
