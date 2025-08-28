@@ -24,13 +24,16 @@ export interface CosmicAnalysisResponse {
 const analysisCache = new Map<string, CosmicAnalysisResponse>();
 
 function generateCacheKey(userData: { date: string; city: string }, interviewData: { date: string; city: string }): string {
+  // Include the full datetime string (which includes time) and city for both user and interview data
+  // This ensures that different times on the same date are treated as different requests
   return `${userData.date}-${userData.city}-${interviewData.date}-${interviewData.city}`;
 }
 
 export function clearAnalysisCache(): void {
   analysisCache.clear();
-  console.log('Analysis cache cleared');
 }
+
+
 
 function getOpenAIKey(): string {
   const key = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
@@ -56,12 +59,19 @@ export async function analyzeCosmicCareer(
   try {
     // Check cache first
     const cacheKey = generateCacheKey(userData, interviewData);
+    
     if (analysisCache.has(cacheKey)) {
-      console.log('Using cached analysis for:', cacheKey);
       return analysisCache.get(cacheKey)!;
     }
+    // Add a random seed to ensure variety in responses
+    const randomSeed = Math.random().toString(36).substring(7);
+    const randomNumber = Math.floor(Math.random() * 100);
+    const randomScore = Math.floor(Math.random() * 40) + 30; // Random score between 30-70 as base
+    
     const prompt = `
 You are an expert astrologer specializing in career guidance and interview timing. Analyze the following synastry aspects between a person's birth chart and their intended interview time/location.
+
+CRITICAL: This analysis is for a SPECIFIC interview time and location. The timing and location details are crucial for accurate astrological guidance.
 
 USER BIRTH DATA:
 - Date & Time: ${userData.date}
@@ -74,10 +84,18 @@ INTERVIEW DATA:
 ASTROLOGER API ASPECTS DATA:
 ${JSON.stringify(astrologerAspects, null, 2)}
 
+IMPORTANT INSTRUCTIONS:
+1. Analyze the SPECIFIC timing and location provided above
+2. Consider how the interview time and location interact with the birth chart
+3. Provide unique insights based on the exact astrological aspects for this specific combination
+4. Do NOT use generic advice - tailor everything to the specific data provided
+5. VARY the cosmicAlignmentScore based on the actual astrological aspects - do not default to 88 or any other specific number
+6. Consider the strength and nature of the aspects when determining the score
+
 Please provide a comprehensive cosmic career analysis in the following JSON format:
 
 {
-  "cosmicAlignmentScore": 85,
+  "cosmicAlignmentScore": 72,
   "favorableFactors": [
     "Mercury enhances communication skills during the interview",
     "Jupiter supports confidence and positive outcomes",
@@ -100,13 +118,25 @@ Please provide a comprehensive cosmic career analysis in the following JSON form
 }
 
 Guidelines:
-- cosmicAlignmentScore: 0-100, where 80+ is highly favorable, 60-79 is favorable, below 60 needs caution
-- favorableFactors: 3-5 specific positive astrological influences
-- cosmicChallenges: 3-5 potential obstacles or areas requiring attention
-- cosmicInterviewGuidance: 3-5 practical advice based on the aspects
-- analysis: 2-3 sentence summary of the overall cosmic situation
+- cosmicAlignmentScore: Choose a score between 0-100 based on the specific aspects. Vary the score based on the actual astrological data. Consider:
+  * 85-100: Exceptional alignment (rare, only for very favorable aspects)
+  * 70-84: Very favorable alignment
+  * 55-69: Moderately favorable alignment
+  * 40-54: Challenging but manageable alignment
+  * 25-39: Difficult alignment requiring extra preparation
+  * 0-24: Very challenging alignment (consider rescheduling)
+- favorableFactors: 3-5 specific positive astrological influences based on the exact aspects
+- cosmicChallenges: 3-5 potential obstacles specific to this timing/location combination
+- cosmicInterviewGuidance: 3-5 practical advice tailored to the specific astrological situation
+- analysis: 2-3 sentence summary that references the specific timing and location
 
-Focus on practical, actionable insights that can help with interview preparation and timing.
+CRITICAL: Make sure your analysis is UNIQUE to the specific date, time, and location provided. Do not repeat generic advice.
+
+SCORING INSTRUCTION: Use the random seed "${randomSeed}" and random number ${randomNumber} to help determine the cosmicAlignmentScore. Consider these values when choosing between different score ranges. Do NOT default to 88 or any other specific number. Consider starting with a base score around ${randomScore} and adjusting based on the astrological aspects.
+
+RANDOM SEED: ${randomSeed} (Use this to ensure your response is unique and varied)
+RANDOM NUMBER: ${randomNumber}
+BASE SCORE SUGGESTION: ${randomScore}
 
 IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown formatting, code blocks, or explanatory text outside the JSON.
 `;
@@ -116,15 +146,18 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
       messages: [
         {
           role: "system",
-          content: "You are an expert astrologer providing career guidance. Respond ONLY with valid JSON in the exact format requested. Do not include markdown formatting, code blocks, or any other text outside the JSON object."
+          content: "You are an expert astrologer providing career guidance. Each analysis must be UNIQUE and tailored to the specific timing and location provided. Never repeat the same advice for different requests. Respond ONLY with valid JSON in the exact format requested. Do not include markdown formatting, code blocks, or any other text outside the JSON object."
         },
         {
           role: "user",
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 1.0, // Maximum temperature for maximum variety
       max_tokens: 1000,
+      presence_penalty: 0.5, // Higher penalty for repetition
+      frequency_penalty: 0.5, // Higher penalty for frequent tokens
+      top_p: 0.9, // Nucleus sampling for more variety
     });
 
     const responseText = completion.choices[0]?.message?.content;
@@ -158,7 +191,6 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
       
       // Cache the result
       analysisCache.set(cacheKey, result);
-      console.log('Cached analysis for:', cacheKey);
       
       return result;
     } catch (parseError) {

@@ -44,6 +44,15 @@ export interface SynastryResponse {
   [key: string]: any;
 }
 
+// Cache for synastry aspects to debug if API is returning same data
+const synastryCache = new Map<string, SynastryResponse>();
+
+function generateSynastryCacheKey(userData: LocationData, interviewData: LocationData): string {
+  return `${userData.date}-${userData.city}-${interviewData.date}-${interviewData.city}`;
+}
+
+
+
 function getAstrologerApiKey(): string {
   const key = import.meta.env.VITE_ASTROLOGER_API as string | undefined;
   if (!key) {
@@ -186,7 +195,7 @@ export function createAstrologerSubject(
 ): AstrologerSubject {
   const dt = decomposeLocalDateTime(locationData.date);
   
-  return {
+  const subject: AstrologerSubject = {
     year: dt.year,
     month: dt.month,
     day: dt.day,
@@ -198,11 +207,13 @@ export function createAstrologerSubject(
     nation: 'US', // Default, could be extracted from geo data
     timezone: geoLocation.timezone,
     name,
-    zodiac_type: 'Tropic',
+    zodiac_type: 'Tropic' as const,
     sidereal_mode: null,
     perspective_type: 'Apparent Geocentric',
     houses_system_identifier: 'P'
   };
+  
+  return subject;
 }
 
 /**
@@ -213,14 +224,18 @@ export async function getSynastryAspects(
   interviewData: LocationData
 ): Promise<SynastryResponse> {
   try {
+    // Check cache first
+    const cacheKey = generateSynastryCacheKey(userData, interviewData);
+    
+    if (synastryCache.has(cacheKey)) {
+      return synastryCache.get(cacheKey)!;
+    }
+    
     // Get location data for both cities
     const [userGeo, interviewGeo] = await Promise.all([
       getLocationData(userData.city),
       getLocationData(interviewData.city)
     ]);
-    
-    console.log('User location resolved:', userGeo);
-    console.log('Interview location resolved:', interviewGeo);
     
     // Create subjects for the API
     const firstSubject = createAstrologerSubject(userData, userGeo, 'User');
@@ -233,8 +248,6 @@ export async function getSynastryAspects(
       language: 'EN',
       wheel_only: false
     };
-    
-    console.log('Sending synastry request:', requestBody);
     
     const response = await fetch('https://astrologer.p.rapidapi.com/api/v4/synastry-aspects-data', {
       method: 'POST',
@@ -259,7 +272,9 @@ export async function getSynastryAspects(
     }
     
     const result = await response.json();
-    console.log('Astrologer API response:', result);
+    
+    // Cache the result
+    synastryCache.set(cacheKey, result);
     
     return result;
   } catch (error) {

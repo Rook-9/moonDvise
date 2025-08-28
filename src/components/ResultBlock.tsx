@@ -110,9 +110,9 @@ export function ResultBlock({ userData, interviewData, cosmicAnalysis }: ResultB
           <h3 className="text-lg font-semibold mb-3 text-green-400">{t.favorableCosmicFactors}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {favorableFactors.slice(0, 4).map((factor, index) => (
-              <Badge key={index} variant="outline" className="border-green-500/50 text-green-400 p-2 justify-start">
-                <CheckCircle className="w-3 h-3 mr-2" />
-                {factor}
+              <Badge key={index} variant="outline" className="border-green-500/50 text-green-400 p-2 justify-start text-left w-full min-h-0 whitespace-normal !w-full">
+                <CheckCircle className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="break-words text-sm leading-relaxed">{factor}</span>
               </Badge>
             ))}
           </div>
@@ -123,9 +123,9 @@ export function ResultBlock({ userData, interviewData, cosmicAnalysis }: ResultB
           <h3 className="text-lg font-semibold mb-3 text-orange-400">{t.cosmicChallenges}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {challenges.map((challenge, index) => (
-              <Badge key={index} variant="outline" className="border-orange-500/50 text-orange-400 p-2 justify-start">
-                <AlertTriangle className="w-3 h-3 mr-2" />
-                {challenge}
+              <Badge key={index} variant="outline" className="border-orange-500/50 text-orange-400 p-2 justify-start text-left w-full min-h-0 whitespace-normal !w-full">
+                <AlertTriangle className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="break-words text-sm leading-relaxed">{challenge}</span>
               </Badge>
             ))}
           </div>
@@ -136,9 +136,9 @@ export function ResultBlock({ userData, interviewData, cosmicAnalysis }: ResultB
           <h3 className="text-lg font-semibold mb-3 text-blue-400">{t.cosmicInterviewGuidance}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {interviewTips.map((tip, index) => (
-              <Badge key={index} variant="outline" className="border-blue-500/50 text-blue-400 p-2 justify-start">
-                <Star className="w-3 h-3 mr-2" />
-                {tip}
+              <Badge key={index} variant="outline" className="border-blue-500/50 text-blue-400 p-2 justify-start text-left w-full min-h-0 whitespace-normal !w-full">
+                <Star className="w-3 h-3 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="break-words text-sm leading-relaxed">{tip}</span>
               </Badge>
             ))}
           </div>
