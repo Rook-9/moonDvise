@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import type { Language } from '../components/LocalizationContext';
 
 export interface CosmicAnalysisRequest {
   userData: {
@@ -20,17 +21,8 @@ export interface CosmicAnalysisResponse {
   analysis: string;
 }
 
-// Simple cache for consistent results
-const analysisCache = new Map<string, CosmicAnalysisResponse>();
-
-function generateCacheKey(userData: { date: string; city: string }, interviewData: { date: string; city: string }): string {
-  // Include the full datetime string (which includes time) and city for both user and interview data
-  // This ensures that different times on the same date are treated as different requests
-  return `${userData.date}-${userData.city}-${interviewData.date}-${interviewData.city}`;
-}
-
 export function clearAnalysisCache(): void {
-  analysisCache.clear();
+  // Kept for backwards compatibility with callers that explicitly reset analyses.
 }
 
 
@@ -46,30 +38,27 @@ function getOpenAIKey(): string {
   return key;
 }
 
-const openai = new OpenAI({
-  apiKey: getOpenAIKey(),
-  dangerouslyAllowBrowser: true // Note: In production, this should be handled server-side
-});
-
 export async function analyzeCosmicCareer(
   userData: { date: string; city: string },
   interviewData: { date: string; city: string },
-  astrologerAspects: any
+  astrologerAspects: any,
+  language: Language = 'en'
 ): Promise<CosmicAnalysisResponse> {
   try {
-    // Check cache first
-    const cacheKey = generateCacheKey(userData, interviewData);
-    
-    if (analysisCache.has(cacheKey)) {
-      return analysisCache.get(cacheKey)!;
-    }
-    // Add a random seed to ensure variety in responses
-    const randomSeed = Math.random().toString(36).substring(7);
-    const randomNumber = Math.floor(Math.random() * 100);
-    const randomScore = Math.floor(Math.random() * 40) + 30; // Random score between 30-70 as base
-    
+    const openai = new OpenAI({
+      apiKey: getOpenAIKey(),
+      dangerouslyAllowBrowser: true // Note: In production, this should be handled server-side
+    });
+
+    const randomSeed = crypto.randomUUID();
+    const responseLanguage = language === 'ru' ? 'Russian' : 'English';
+    const creativeAngles = ['communication style', 'emotional composure', 'first impression', 'decision-making', 'adaptability'];
+    const creativeAngle = creativeAngles[Math.floor(Math.random() * creativeAngles.length)];
+
     const prompt = `
 You are an expert astrologer specializing in career guidance and interview timing. Analyze the following synastry aspects between a person's birth chart and their intended interview time/location.
+
+Write every user-facing value in ${responseLanguage}. Do not mix languages.
 
 CRITICAL: This analysis is for a SPECIFIC interview time and location. The timing and location details are crucial for accurate astrological guidance.
 
@@ -90,7 +79,9 @@ IMPORTANT INSTRUCTIONS:
 3. Provide unique insights based on the exact astrological aspects for this specific combination
 4. Do NOT use generic advice - tailor everything to the specific data provided
 5. VARY the cosmicAlignmentScore based on the actual astrological aspects - do not default to 88 or any other specific number
-6. Consider the strength and nature of the aspects when determining the score
+6. Consider both favorable and challenging aspects. A result below 75 is expected when the data includes meaningful challenges; do not round scores upward just to make the result positive.
+7. Use this fresh perspective for this analysis: ${creativeAngle}
+8. Use the full 0-100 scale when the aspects justify it, including scores below 75 and below 60.
 
 Please provide a comprehensive cosmic career analysis in the following JSON format:
 
@@ -132,11 +123,7 @@ Guidelines:
 
 CRITICAL: Make sure your analysis is UNIQUE to the specific date, time, and location provided. Do not repeat generic advice.
 
-SCORING INSTRUCTION: Use the random seed "${randomSeed}" and random number ${randomNumber} to help determine the cosmicAlignmentScore. Consider these values when choosing between different score ranges. Do NOT default to 88 or any other specific number. Consider starting with a base score around ${randomScore} and adjusting based on the astrological aspects.
-
-RANDOM SEED: ${randomSeed} (Use this to ensure your response is unique and varied)
-RANDOM NUMBER: ${randomNumber}
-BASE SCORE SUGGESTION: ${randomScore}
+CREATIVE VARIATION SEED: ${randomSeed}. Use it only to choose different wording and emphasis; the score must still be grounded in the supplied aspects.
 
 IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown formatting, code blocks, or explanatory text outside the JSON.
 `;
@@ -146,7 +133,7 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
       messages: [
         {
           role: "system",
-          content: "You are an expert astrologer providing career guidance. Each analysis must be UNIQUE and tailored to the specific timing and location provided. Never repeat the same advice for different requests. Respond ONLY with valid JSON in the exact format requested. Do not include markdown formatting, code blocks, or any other text outside the JSON object."
+          content: `You are an expert astrologer providing career guidance in ${responseLanguage}. Each analysis must be unique and tailored to the specific timing and location provided. Never repeat generic advice when the aspects support a more specific observation. Respond ONLY with valid JSON in the exact format requested. Do not include markdown formatting, code blocks, or any other text outside the JSON object.`
         },
         {
           role: "user",
@@ -168,7 +155,7 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
     // Try to parse the JSON response
     try {
       let jsonText = responseText.trim();
-      
+
       // Remove markdown code blocks if present
       if (jsonText.startsWith('```json')) {
         jsonText = jsonText.replace(/^```json\s*/, '');
@@ -179,19 +166,18 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
       if (jsonText.endsWith('```')) {
         jsonText = jsonText.replace(/\s*```$/, '');
       }
-      
+
       const analysis = JSON.parse(jsonText);
-      
+
       // Validate the response structure
-      if (!analysis.cosmicAlignmentScore || !analysis.favorableFactors || !analysis.cosmicChallenges || !analysis.cosmicInterviewGuidance) {
+      if (typeof analysis.cosmicAlignmentScore !== 'number' || !analysis.favorableFactors || !analysis.cosmicChallenges || !analysis.cosmicInterviewGuidance || !analysis.analysis) {
         throw new Error('Invalid response structure from OpenAI');
       }
 
+      analysis.cosmicAlignmentScore = Math.max(0, Math.min(100, analysis.cosmicAlignmentScore));
+
       const result = analysis as CosmicAnalysisResponse;
-      
-      // Cache the result
-      analysisCache.set(cacheKey, result);
-      
+
       return result;
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', responseText);

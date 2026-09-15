@@ -1,10 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Language = 'en' | 'ru';
+export type Language = 'en' | 'ru';
 
 interface Translations {
   // Header
   login: string;
+  username: string;
+  password: string;
+  signIn: string;
+  signUp: string;
+  createAccount: string;
+  logout: string;
+  loginError: string;
+  accountCreated: string;
+  loginPrototypeNotice: string;
   
   // Hero section
   heroTitle: string;
@@ -23,6 +32,8 @@ interface Translations {
   interviewDataDescription: string;
   intendedInterviewDateTime: string;
   setInterviewData: string;
+  nextDay: string;
+  interviewDataSetSuccessfully: string;
   
   // Ask stars button
   askStars: string;
@@ -39,6 +50,7 @@ interface Translations {
   goodAlignmentMessage: string;
   cautionMessage: string;
   cosmicCareerAlignment: string;
+  analysisSummary: string;
   favorableCosmicFactors: string;
   cosmicChallenges: string;
   cosmicInterviewGuidance: string;
@@ -75,6 +87,15 @@ const translations: Record<Language, Translations> = {
   en: {
     // Header
     login: 'Login',
+    username: 'Username',
+    password: 'Password',
+    signIn: 'Sign in',
+    signUp: 'Sign up',
+    createAccount: 'Create account',
+    logout: 'Log out',
+    loginError: 'Incorrect username or password.',
+    accountCreated: 'Account created. You are now signed in.',
+    loginPrototypeNotice: 'Prototype login: account data is stored only in this browser.',
     
     // Hero section
     heroTitle: 'Is this the right time to schedule a job interview?',
@@ -93,6 +114,8 @@ const translations: Record<Language, Translations> = {
     interviewDataDescription: 'Enter the interview location and intended schedule date',
     intendedInterviewDateTime: 'Intended Interview Date & Time',
     setInterviewData: 'Set Interview Data',
+    nextDay: 'Next day',
+    interviewDataSetSuccessfully: 'Interview data set successfully!',
     
     // Ask stars button
     askStars: 'Ask stars',
@@ -109,6 +132,7 @@ const translations: Record<Language, Translations> = {
     goodAlignmentMessage: 'Good cosmic alignment for career advancement. Prepare well and confidence will follow.',
     cautionMessage: 'The cosmic energies suggest extra preparation. Consider rescheduling if possible.',
     cosmicCareerAlignment: 'Cosmic Career Alignment Score',
+    analysisSummary: 'Cosmic reading',
     favorableCosmicFactors: 'Favorable Cosmic Factors',
     cosmicChallenges: 'Cosmic Challenges',
     cosmicInterviewGuidance: 'Cosmic Interview Guidance',
@@ -143,6 +167,15 @@ const translations: Record<Language, Translations> = {
   ru: {
     // Header
     login: 'Войти',
+    username: 'Имя пользователя',
+    password: 'Пароль',
+    signIn: 'Войти',
+    signUp: 'Регистрация',
+    createAccount: 'Создать аккаунт',
+    logout: 'Выйти',
+    loginError: 'Неверное имя пользователя или пароль.',
+    accountCreated: 'Аккаунт создан. Вы вошли в систему.',
+    loginPrototypeNotice: 'Демо-вход: данные аккаунта хранятся только в этом браузере.',
     
     // Hero section
     heroTitle: 'Подходящее ли сейчас время для собеседования?',
@@ -161,6 +194,8 @@ const translations: Record<Language, Translations> = {
     interviewDataDescription: 'Введите местоположение собеседования и планируемую дату',
     intendedInterviewDateTime: 'Планируемые дата и время собеседования',
     setInterviewData: 'Установить данные собеседования',
+    nextDay: 'Следующий день',
+    interviewDataSetSuccessfully: 'Данные собеседования успешно сохранены!',
     
     // Ask stars button
     askStars: 'Спросить звёзды',
@@ -177,6 +212,7 @@ const translations: Record<Language, Translations> = {
     goodAlignmentMessage: 'Хорошее космическое выравнивание для карьерного роста. Хорошо подготовьтесь, и уверенность придёт.',
     cautionMessage: 'Космические энергии предлагают дополнительную подготовку. Рассмотрите возможность переноса, если это возможно.',
     cosmicCareerAlignment: 'Показатель космического карьерного выравнивания',
+    analysisSummary: 'Космическое толкование',
     favorableCosmicFactors: 'Благоприятные космические факторы',
     cosmicChallenges: 'Космические вызовы',
     cosmicInterviewGuidance: 'Космическое руководство для собеседования',

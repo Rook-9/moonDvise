@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Button } from './ui/button';
-import { Calendar, MapPin, Briefcase } from 'lucide-react';
+import { Calendar, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import { useLocalization } from './LocalizationContext';
 
 interface LocationData {
@@ -14,9 +14,10 @@ interface LocationData {
 interface InterviewDataFormProps {
   onSubmit: (data: LocationData) => void;
   isSubmitted?: boolean;
+  submittedData?: LocationData | null;
 }
 
-export function InterviewDataForm({ onSubmit, isSubmitted = false }: InterviewDataFormProps) {
+export function InterviewDataForm({ onSubmit, isSubmitted = false, submittedData = null }: InterviewDataFormProps) {
   const { t } = useLocalization();
   const [formData, setFormData] = useState<LocationData>({
     date: '',
@@ -25,9 +26,21 @@ export function InterviewDataForm({ onSubmit, isSubmitted = false }: InterviewDa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.date && formData.city) {
+    const isDuplicate = submittedData?.date === formData.date && submittedData.city === formData.city;
+    if (formData.date && formData.city && !isDuplicate) {
       onSubmit(formData);
     }
+  };
+
+  const moveToNextDay = () => {
+    if (!formData.date) return;
+
+    const nextDate = new Date(formData.date);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    const pad = (value: number) => String(value).padStart(2, '0');
+    const nextDateValue = `${nextDate.getFullYear()}-${pad(nextDate.getMonth() + 1)}-${pad(nextDate.getDate())}T${pad(nextDate.getHours())}:${pad(nextDate.getMinutes())}`;
+    setFormData(prev => ({ ...prev, date: nextDateValue }));
   };
 
   return (
@@ -74,14 +87,21 @@ export function InterviewDataForm({ onSubmit, isSubmitted = false }: InterviewDa
             />
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
-          >
-            {t.setInterviewData}
-          </Button>
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <Button
+              type="submit"
+              disabled={isSubmitted && submittedData?.date === formData.date && submittedData.city === formData.city}
+              className="min-w-0 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+            >
+              {t.setInterviewData}
+            </Button>
+            <Button type="button" variant="outline" onClick={moveToNextDay} disabled={!formData.date} aria-label={t.nextDay}>
+              <ArrowRight className="w-4 h-4 mr-2" />
+              {t.nextDay}
+            </Button>
+          </div>
         </form>
-        
+
         {/* Success State */}
         {isSubmitted && (
           <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
@@ -89,7 +109,7 @@ export function InterviewDataForm({ onSubmit, isSubmitted = false }: InterviewDa
               <div className="w-4 h-4 bg-green-500 rounded-full mr-2 flex items-center justify-center">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
               </div>
-              <span className="text-sm font-medium">Interview data set successfully!</span>
+              <span className="text-sm font-medium">{t.interviewDataSetSuccessfully}</span>
             </div>
           </div>
         )}

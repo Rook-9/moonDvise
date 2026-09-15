@@ -17,7 +17,7 @@ export function Footer() {
                 <span className="text-white text-sm font-bold">月</span>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                moonDvise
+                Lunara
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ export function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-sm text-muted-foreground">
-            <p>© 2025 moonDvise. All rights reserved.</p>
+            <p>© 2025 Lunara. All rights reserved.</p>
             <p className="mt-1">
               {t.disclaimer}
             </p>

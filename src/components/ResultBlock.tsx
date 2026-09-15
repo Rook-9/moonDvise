@@ -105,6 +105,11 @@ export function ResultBlock({ userData, interviewData, cosmicAnalysis }: ResultB
           <Progress value={cosmicAlignment} className="h-3" />
         </div>
 
+        <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4">
+          <h3 className="mb-2 text-lg font-semibold text-cyan-300">{t.analysisSummary}</h3>
+          <p className="text-muted-foreground leading-relaxed">{cosmicAnalysis.analysis}</p>
+        </div>
+
         {/* Favorable Factors */}
         <div>
           <h3 className="text-lg font-semibold mb-3 text-green-400">{t.favorableCosmicFactors}</h3>

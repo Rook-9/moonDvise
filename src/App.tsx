@@ -18,7 +18,7 @@ interface LocationData {
 }
 
 function AppContent() {
-  const { t } = useLocalization();
+  const { t, language } = useLocalization();
   const [userData, setUserData] = useState<LocationData | null>(null);
   const [interviewData, setInterviewData] = useState<LocationData | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -55,7 +55,7 @@ function AppContent() {
       const synastryResult = await getSynastryAspects(userData, interviewData);
 
       // Analyze the aspects with OpenAI
-      const analysis = await analyzeCosmicCareer(userData, interviewData, synastryResult);
+      const analysis = await analyzeCosmicCareer(userData, interviewData, synastryResult, language);
 
       setCosmicAnalysis(analysis);
       setShowResult(true);
@@ -93,7 +93,7 @@ function AppContent() {
       {/* Content */}
       <div className="relative z-10">
         <Header />
-        
+
         <main className="w-full max-w-none px-4 py-8">
           {/* Hero Section */}
           <div className="text-center mb-12">
@@ -110,13 +110,15 @@ function AppContent() {
 
           {/* Forms Section */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <UserDataForm 
-              onSubmit={handleUserDataSubmit} 
+            <UserDataForm
+              onSubmit={handleUserDataSubmit}
               isSubmitted={userDataSubmitted}
+              submittedData={userData}
             />
-            <InterviewDataForm 
-              onSubmit={handleInterviewDataSubmit} 
+            <InterviewDataForm
+              onSubmit={handleInterviewDataSubmit}
               isSubmitted={interviewDataSubmitted}
+              submittedData={interviewData}
             />
           </div>
 
@@ -127,8 +129,8 @@ function AppContent() {
               disabled={!canAskStars || isAnalyzing}
               className={`
                 px-8 py-4 text-lg transition-all duration-300
-                ${canAskStars 
-                  ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 shadow-lg hover:shadow-xl hover:scale-105' 
+                ${canAskStars
+                  ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 shadow-lg hover:shadow-xl hover:scale-105'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }
               `}
@@ -156,9 +158,9 @@ function AppContent() {
 
           {/* Result Section */}
           {showResult && userData && interviewData && (
-            <ResultBlock 
-              userData={userData} 
-              interviewData={interviewData} 
+            <ResultBlock
+              userData={userData}
+              interviewData={interviewData}
               cosmicAnalysis={cosmicAnalysis}
             />
           )}

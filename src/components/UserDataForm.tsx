@@ -14,9 +14,10 @@ interface LocationData {
 interface UserDataFormProps {
   onSubmit: (data: LocationData) => void;
   isSubmitted?: boolean;
+  submittedData?: LocationData | null;
 }
 
-export function UserDataForm({ onSubmit, isSubmitted = false }: UserDataFormProps) {
+export function UserDataForm({ onSubmit, isSubmitted = false, submittedData = null }: UserDataFormProps) {
   const { t } = useLocalization();
   const [formData, setFormData] = useState<LocationData>({
     date: '',
@@ -25,7 +26,8 @@ export function UserDataForm({ onSubmit, isSubmitted = false }: UserDataFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.date && formData.city) {
+    const isDuplicate = submittedData?.date === formData.date && submittedData.city === formData.city;
+    if (formData.date && formData.city && !isDuplicate) {
       onSubmit(formData);
     }
   };
@@ -67,6 +69,7 @@ export function UserDataForm({ onSubmit, isSubmitted = false }: UserDataFormProp
               id="user-city"
               type="text"
               placeholder="Tokyo, London, New York..."
+              disabled={isSubmitted && submittedData?.date === formData.date && submittedData.city === formData.city}
               value={formData.city}
               onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
               className="bg-background/30 border-purple-500/30"
@@ -76,12 +79,13 @@ export function UserDataForm({ onSubmit, isSubmitted = false }: UserDataFormProp
 
           <Button
             type="submit"
+            disabled={isSubmitted && submittedData?.date === formData.date && submittedData.city === formData.city}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
           >
             {t.setUserData}
           </Button>
         </form>
-        
+
         {/* Success State */}
         {isSubmitted && (
           <div className="mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">

@@ -1,9 +1,14 @@
 import { Button } from './ui/button';
 import { User, Globe } from 'lucide-react';
 import { useLocalization } from './LocalizationContext';
+import { LoginDialog } from './LoginDialog';
+import { useState } from 'react';
+import { getStoredSession, clearStoredSession, type AuthSession } from '../lib/authService';
 
 export function Header() {
   const { t, language, setLanguage } = useLocalization();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [session, setSession] = useState<AuthSession | null>(getStoredSession);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'ru' : 'en');
@@ -17,7 +22,7 @@ export function Header() {
             <span className="text-white text-sm font-bold">月</span>
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-            moonDvise
+            Lunara
           </span>
         </div>
         
@@ -32,12 +37,20 @@ export function Header() {
             {language === 'en' ? 'RU' : 'EN'}
           </Button>
           
-          <Button variant="outline" className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10">
-            <User className="w-4 h-4 mr-2" />
-            {t.login}
-          </Button>
+          {session ? (
+            <Button variant="outline" onClick={() => { clearStoredSession(); setSession(null); }} className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10">
+              <User className="w-4 h-4 mr-2" />
+              {t.logout}
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={() => setIsLoginOpen(true)} className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10">
+              <User className="w-4 h-4 mr-2" />
+              {t.login}
+            </Button>
+          )}
         </div>
       </div>
+      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} onAuthenticated={setSession} />
     </header>
   );
 }
