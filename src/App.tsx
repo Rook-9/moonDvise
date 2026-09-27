@@ -9,6 +9,7 @@ import { Button } from './components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { LocalizationProvider, useLocalization } from './components/LocalizationContext';
 import { getSynastryAspects } from './lib/astrologyApi';
+import { scoreAstrologyAspects } from './lib/aspectScoring';
 import { analyzeCosmicCareer } from './lib/openaiService';
 import type { CosmicAnalysisResponse } from './lib/openaiService';
 
@@ -53,9 +54,10 @@ function AppContent() {
 
       // Get synastry aspects between user and interview data
       const synastryResult = await getSynastryAspects(userData, interviewData);
+      const aspectScore = scoreAstrologyAspects(synastryResult);
 
       // Analyze the aspects with OpenAI
-      const analysis = await analyzeCosmicCareer(userData, interviewData, synastryResult, language);
+      const analysis = await analyzeCosmicCareer(userData, interviewData, aspectScore, language);
 
       setCosmicAnalysis(analysis);
       setShowResult(true);

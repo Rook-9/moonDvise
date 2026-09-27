@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import type { Language } from '../components/LocalizationContext';
+import type { AspectScore } from './aspectScoring';
 
 export interface CosmicAnalysisRequest {
   userData: {
@@ -10,7 +11,7 @@ export interface CosmicAnalysisRequest {
     date: string;
     city: string;
   };
-  astrologerAspects: any;
+  aspectScore: AspectScore;
 }
 
 export interface CosmicAnalysisResponse {
@@ -41,7 +42,7 @@ function getOpenAIKey(): string {
 export async function analyzeCosmicCareer(
   userData: { date: string; city: string },
   interviewData: { date: string; city: string },
-  astrologerAspects: any,
+  aspectScore: AspectScore,
   language: Language = 'en'
 ): Promise<CosmicAnalysisResponse> {
   try {
@@ -50,13 +51,10 @@ export async function analyzeCosmicCareer(
       dangerouslyAllowBrowser: true // Note: In production, this should be handled server-side
     });
 
-    const randomSeed = crypto.randomUUID();
     const responseLanguage = language === 'ru' ? 'Russian' : 'English';
-    const creativeAngles = ['communication style', 'emotional composure', 'first impression', 'decision-making', 'adaptability'];
-    const creativeAngle = creativeAngles[Math.floor(Math.random() * creativeAngles.length)];
 
     const prompt = `
-You are an expert astrologer specializing in career guidance and interview timing. Analyze the following synastry aspects between a person's birth chart and their intended interview time/location.
+  You are an expert astrologer specializing in career guidance and interview timing. Interpret the scored synastry aspects between a person's birth chart and their intended interview time/location.
 
 Write every user-facing value in ${responseLanguage}. Do not mix languages.
 
@@ -70,23 +68,29 @@ INTERVIEW DATA:
 - Date & Time: ${interviewData.date}
 - Location: ${interviewData.city}
 
-ASTROLOGER API ASPECTS DATA:
-${JSON.stringify(astrologerAspects, null, 2)}
+DETERMINISTIC SCORE:
+- Points: ${aspectScore.points}/${aspectScore.maxPoints}
+- Percentage: ${aspectScore.percentage}%
+
+TOP POSITIVE ASPECTS:
+${JSON.stringify(aspectScore.positiveAspects, null, 2)}
+
+TOP NEGATIVE ASPECTS:
+${JSON.stringify(aspectScore.negativeAspects, null, 2)}
 
 IMPORTANT INSTRUCTIONS:
 1. Analyze the SPECIFIC timing and location provided above
 2. Consider how the interview time and location interact with the birth chart
 3. Provide unique insights based on the exact astrological aspects for this specific combination
 4. Do NOT use generic advice - tailor everything to the specific data provided
-5. VARY the cosmicAlignmentScore based on the actual astrological aspects - do not default to 88 or any other specific number
-6. Consider both favorable and challenging aspects. A result below 75 is expected when the data includes meaningful challenges; do not round scores upward just to make the result positive.
-7. Use this fresh perspective for this analysis: ${creativeAngle}
-8. Use the full 0-100 scale when the aspects justify it, including scores below 75 and below 60.
+5. Return the supplied deterministic percentage exactly; do not change the score.
+6. Discuss only the supplied aspects and explain how to work with the challenging ones.
+7. Make each factor and piece of advice specific to the listed planets, aspect type, and orb. Avoid generic astrological advice.
 
 Please provide a comprehensive cosmic career analysis in the following JSON format:
 
 {
-  "cosmicAlignmentScore": 72,
+  "cosmicAlignmentScore": ${aspectScore.percentage},
   "favorableFactors": [
     "Mercury enhances communication skills during the interview",
     "Jupiter supports confidence and positive outcomes",
@@ -109,21 +113,13 @@ Please provide a comprehensive cosmic career analysis in the following JSON form
 }
 
 Guidelines:
-- cosmicAlignmentScore: Choose a score between 0-100 based on the specific aspects. Vary the score based on the actual astrological data. Consider:
-  * 85-100: Exceptional alignment (rare, only for very favorable aspects)
-  * 70-84: Very favorable alignment
-  * 55-69: Moderately favorable alignment
-  * 40-54: Challenging but manageable alignment
-  * 25-39: Difficult alignment requiring extra preparation
-  * 0-24: Very challenging alignment (consider rescheduling)
+- cosmicAlignmentScore: Return exactly ${aspectScore.percentage}, calculated from ${aspectScore.points}/${aspectScore.maxPoints} points.
 - favorableFactors: 3-5 specific positive astrological influences based on the exact aspects
 - cosmicChallenges: 3-5 potential obstacles specific to this timing/location combination
 - cosmicInterviewGuidance: 3-5 practical advice tailored to the specific astrological situation
 - analysis: 2-3 sentence summary that references the specific timing and location
 
-CRITICAL: Make sure your analysis is UNIQUE to the specific date, time, and location provided. Do not repeat generic advice.
-
-CREATIVE VARIATION SEED: ${randomSeed}. Use it only to choose different wording and emphasis; the score must still be grounded in the supplied aspects.
+CRITICAL: Make the interpretation specific to the exact interview date and hour and the supplied aspects. Do not invent aspects or repeat generic advice.
 
 IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown formatting, code blocks, or explanatory text outside the JSON.
 `;
@@ -174,7 +170,7 @@ IMPORTANT: Respond with ONLY the JSON object. Do not include any markdown format
         throw new Error('Invalid response structure from OpenAI');
       }
 
-      analysis.cosmicAlignmentScore = Math.max(0, Math.min(100, analysis.cosmicAlignmentScore));
+      analysis.cosmicAlignmentScore = aspectScore.percentage;
 
       const result = analysis as CosmicAnalysisResponse;
 
